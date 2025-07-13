@@ -44,7 +44,7 @@ describe('App Middleware', () => {
         .set('Cookie', cookie)
         .expect(200);
       
-      expect(res.text).toContain('Text Analyzer');
+      expect(res.text).toContain('TextAnalyzer - Dashboard');
     });
   });
 
@@ -74,7 +74,7 @@ describe('App Middleware', () => {
         .set('Cookie', cookie)
         .expect(200);
       
-      expect(res.text).toContain('Text Analyzer');
+      expect(res.text).toContain('TextAnalyzer - Dashboard');
       expect(res.text).toContain('Enter your text here');
     });
   });
