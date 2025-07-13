@@ -49,7 +49,7 @@ TextAnalyzer/
 ## Setup
 1. **Clone the repo:**
    ```sh
-   git clone <your-repo-url>
+   git clone https://github.com/Shafayat/TextAnalyzer.git
    cd TextAnalyzer
    ```
 2. **Install dependencies:**
