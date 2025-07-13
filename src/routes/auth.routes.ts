@@ -20,13 +20,13 @@ router.get('/auth/google', passport.authenticate('google', { scope: ['profile'] 
  * GET /auth/google/callback
  * Handles the callback from Google OAuth after user authentication.
  * If authentication fails, redirects to the login page.
- * On success, establishes a session and redirects the user to the homepage.
+ * On success, establishes a session and redirects the user to the dashboard.
  */
 router.get(
   '/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login' }),
+  passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
-    res.redirect('/');
+    res.redirect('/dashboard');
   }
 );
 

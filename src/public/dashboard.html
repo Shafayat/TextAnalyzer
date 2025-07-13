@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TextAnalyzer - Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
+    .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h1 { text-align: center; color: #333; }
+    .text-input { width: 100%; min-height: 200px; padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; resize: vertical; }
+    .submit-btn { padding: 12px 24px; background: #007bff; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 12px; }
+    .submit-btn:hover { background: #0056b3; }
+    .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
+    .results { margin-top: 24px; padding: 16px; background: #f8f9fa; border-radius: 4px; display: none; }
+    .result-item { margin: 8px 0; }
+    .result-label { font-weight: bold; color: #333; }
+    .longest-words { display: flex; flex-wrap: wrap; gap: 8px; }
+    .word-tag { background: #007bff; color: #fff; padding: 4px 8px; border-radius: 12px; font-size: 14px; }
+    .error { color: red; text-align: center; margin-top: 12px; }
+    .logout { text-align: right; margin-bottom: 20px; }
+    .logout-btn { 
+      background: #dc3545; 
+      color: white; 
+      border: none; 
+      padding: 8px 16px; 
+      border-radius: 4px; 
+      cursor: pointer; 
+      font-size: 14px;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .logout-btn:hover { 
+      background: #c82333; 
+      text-decoration: none; 
+    }
+  </style>
+</head>
+<body>
+  <div class="logout">
+    <button class="logout-btn" onclick="logout();">Logout</button>
+  </div>
+  <div class="container">
+    <h1>Text Analyzer</h1>
+    <form id="text-form">
+      <textarea 
+        id="text-input" 
+        class="text-input" 
+        placeholder="Enter your text here..." 
+        required
+      ></textarea>
+      <button type="submit" class="submit-btn" id="submit-btn">Analyze Text</button>
+    </form>
+    <div class="error" id="error-message"></div>
+    <div class="results" id="results">
+      <h3>Analysis Results</h3>
+      <div class="result-item">
+        <span class="result-label">Word Count:</span> 
+        <span id="word-count">-</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">Character Count:</span> 
+        <span id="character-count">-</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">Sentence Count:</span> 
+        <span id="sentence-count">-</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">Paragraph Count:</span> 
+        <span id="paragraph-count">-</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">Longest Words by Paragraph:</span>
+        <div class="paragraph-longest-words" id="paragraph-longest-words">-</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    async function logout() {
+      try {
+        const res = await fetch('/logout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (res.ok) {
+          window.location.href = '/';
+        } else {
+          console.error('Logout failed');
+        }
+      } catch (err) {
+        console.error('Logout error:', err);
+      }
+    }
+    
+    document.getElementById('text-form').onsubmit = async function(e) {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById('submit-btn');
+      const errorMessage = document.getElementById('error-message');
+      const results = document.getElementById('results');
+      
+      // Clear previous results and errors
+      errorMessage.innerText = '';
+      results.style.display = 'none';
+      
+      const content = document.getElementById('text-input').value.trim();
+      if (!content) {
+        errorMessage.innerText = 'Please enter some text to analyze.';
+        return;
+      }
+      
+      // Disable submit button
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Analyzing...';
+      
+      try {
+        const res = await fetch('/texts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          displayResults(data.analysis);
+        } else {
+          const errorData = await res.json();
+          errorMessage.innerText = errorData.message || 'Failed to analyze text.';
+        }
+      } catch (err) {
+        errorMessage.innerText = 'Network error. Please try again.';
+      } finally {
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Analyze Text';
+      }
+    };
+    
+    function displayResults(analysis) {
+      document.getElementById('word-count').innerText = analysis.wordCount;
+      document.getElementById('character-count').innerText = analysis.characterCount;
+      document.getElementById('sentence-count').innerText = analysis.sentenceCount;
+      document.getElementById('paragraph-count').innerText = analysis.paragraphCount;
+      
+      const paragraphLongestWordsContainer = document.getElementById('paragraph-longest-words');
+      if (analysis.longestWordsPerParagraph && analysis.longestWordsPerParagraph.length > 0) {
+        paragraphLongestWordsContainer.innerHTML = analysis.longestWordsPerParagraph
+          .map(paragraph => {
+            const words = paragraph.longestWords.length > 0 
+              ? paragraph.longestWords.map(word => `<span class="word-tag">${word}</span>`).join('')
+              : 'No words found';
+            return `<div style="margin: 8px 0;"><strong>Paragraph ${paragraph.paragraphIndex}:</strong> ${words}</div>`;
+          })
+          .join('');
+      } else {
+        paragraphLongestWordsContainer.innerText = 'No paragraphs found';
+      }
+      
+      document.getElementById('results').style.display = 'block';
+    }
+  </script>
+</body>
+</html> 

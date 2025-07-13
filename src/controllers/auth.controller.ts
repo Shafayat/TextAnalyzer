@@ -38,7 +38,8 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
  * Uses Passport's 'local' strategy to authenticate the user.
  * - Expects 'username' and 'password' in the request body.
  * - Returns 401 if authentication fails.
- * - Logs in the user and returns 200 with the user's username on success.
+ * - For API calls: returns JSON with username
+ * - For form submissions: redirects to dashboard
  */
 
 export const signin = (req: Request, res: Response, next: NextFunction) => {
@@ -48,7 +49,15 @@ export const signin = (req: Request, res: Response, next: NextFunction) => {
     req.logIn(user, (err: any) => {
       if (err) return next(err);
       console.log('login done');
-      return res.status(200).json({ username: user.username });
+      
+      // Check if this is an API call or form submission
+      const isApiCall = req.headers.accept === 'application/json' || req.headers['content-type'] === 'application/json';
+      
+      if (isApiCall) {
+        return res.status(200).json({ username: user.username });
+      } else {
+        return res.redirect('/dashboard');
+      }
     });
   })(req, res, next);
 }; 
