@@ -35,7 +35,13 @@ app.use(authRoutes);
 app.use(userRoutes);
 app.use('/api', textRoutes);
 
-mongoose.connect(process.env.MONGO_URI||'mongodb://localhost:27017/textanalyzer');
+app.use((err: any, req: any, res: any, next: any  ) => {
+  console.error('Express error:', err); // Add this line
+  res.status(err.status || 500).json({
+    message: err.message,
+    stack: process.env.NODE_ENV === 'test' ? err.stack : undefined, // Show stack in test
+  });
+});
 
 export default app; 
 

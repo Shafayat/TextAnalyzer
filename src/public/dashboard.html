@@ -6,7 +6,18 @@
   <title>TextAnalyzer - Dashboard</title>
   <style>
     body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
-    .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .dashboard-layout { display: flex; max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    aside.sidebar { width: 300px; background: #f8f9fa; border-right: 1px solid #eee; padding: 20px 0 20px 20px; border-radius: 8px 0 0 8px; min-height: 600px; }
+    .sidebar-title { font-size: 18px; font-weight: bold; margin-bottom: 12px; }
+    .text-list { list-style: none; padding: 0; margin: 0; }
+    .text-list-item { padding: 10px 8px; border-radius: 4px; cursor: pointer; margin-bottom: 4px; transition: background 0.15s; }
+    .text-list-item.selected, .text-list-item:hover { background: #e3eaff; }
+    .text-snippet { color: #333; font-size: 15px; }
+    .text-date { color: #888; font-size: 12px; margin-left: 4px; }
+    .pagination { display: flex; gap: 8px; margin-top: 12px; justify-content: center; }
+    .pagination-btn { padding: 4px 12px; border: 1px solid #007bff; background: #fff; color: #007bff; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background 0.2s; }
+    .pagination-btn:disabled { color: #aaa; border-color: #ccc; cursor: not-allowed; }
+    .container { flex: 1; padding: 32px 32px 32px 32px; }
     h1 { text-align: center; color: #333; }
     .text-input { width: 100%; min-height: 160px; padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; resize: vertical; }
     .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center; }
@@ -23,40 +34,79 @@
     .logout-btn { background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; text-decoration: none; display: inline-block; transition: background 0.2s; }
     .logout-btn:hover { background: #c82333; text-decoration: none; }
     .paragraph-block { margin: 8px 0; }
+    .tab-bar { display: flex; justify-content: center; margin-bottom: 24px; gap: 8px; }
+    .tab-btn { padding: 10px 24px; border: none; background: #e3eaff; color: #333; border-radius: 4px 4px 0 0; font-size: 16px; cursor: pointer; transition: background 0.2s; }
+    .tab-btn.active { background: #007bff; color: #fff; }
+    .tab-content { display: block; }
+    #tab-analyze-content { min-height: 300px; }
   </style>
 </head>
 <body>
   <nav class="logout">
     <button class="logout-btn" onclick="logout();">Logout</button>
   </nav>
-  <main class="container">
-    <h1>Text Analyzer</h1>
-    <form id="text-form" autocomplete="off" onsubmit="return false;">
-      <textarea id="text-input" class="text-input" placeholder="Enter your text here..." required></textarea>
-      <div class="actions">
-        <button type="button" class="submit-btn" data-label="Analyze All" onclick="analyzeAll(this)">Analyze All</button>
-        <button type="button" class="submit-btn" data-label="Word Count" onclick="analyzeWordCount(this)">Word Count</button>
-        <button type="button" class="submit-btn" data-label="Character Count" onclick="analyzeCharacterCount(this)">Character Count</button>
-        <button type="button" class="submit-btn" data-label="Sentence Count" onclick="analyzeSentenceCount(this)">Sentence Count</button>
-        <button type="button" class="submit-btn" data-label="Paragraph Count" onclick="analyzeParagraphCount(this)">Paragraph Count</button>
-        <button type="button" class="submit-btn" data-label="Longest Words by Paragraph" onclick="analyzeLongestWordsByParagraph(this)">Longest Words by Paragraph</button>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div class="sidebar-title">Saved Messages</div>
+      <ul class="text-list" id="text-list"></ul>
+      <div class="pagination">
+        <button class="pagination-btn" id="prev-page" onclick="changePage(-1)">Prev</button>
+        <span id="page-info" style="align-self:center;"></span>
+        <button class="pagination-btn" id="next-page" onclick="changePage(1)">Next</button>
       </div>
-    </form>
-    <div class="error" id="error-message"></div>
-    <section class="results" id="results">
-      <h3>Analysis Results</h3>
-      <ul class="result-list">
-        <li class="result-item"><span class="result-label">Word Count:</span> <span id="word-count">-</span></li>
-        <li class="result-item"><span class="result-label">Character Count:</span> <span id="character-count">-</span></li>
-        <li class="result-item"><span class="result-label">Sentence Count:</span> <span id="sentence-count">-</span></li>
-        <li class="result-item"><span class="result-label">Paragraph Count:</span> <span id="paragraph-count">-</span></li>
-        <li class="result-item"><span class="result-label">Longest Words by Paragraph:</span>
-          <div id="paragraph-longest-words">-</div>
-        </li>
-      </ul>
-    </section>
-  </main>
+    </aside>
+    <main class="container">
+      <div class="tab-bar">
+        <button id="tab-create" class="tab-btn active" onclick="showTab('create')">Create Text</button>
+        <button id="tab-analyze" class="tab-btn" onclick="showTab('analyze')">Analyze Text</button>
+      </div>
+      <div id="tab-create-content" class="tab-content">
+        <h1>Create New Text</h1>
+        <form id="text-form" autocomplete="off" onsubmit="return false;">
+          <textarea id="text-input" class="text-input" placeholder="Enter your text here..." required></textarea>
+          <div class="actions">
+            <button type="button" class="submit-btn" data-label="Save Text" onclick="saveText(this)">Save Text</button>
+          </div>
+        </form>
+        <div class="error" id="error-message"></div>
+      </div>
+      <div id="tab-analyze-content" class="tab-content" style="display:none;">
+        <h1>Analyze Text</h1>
+        <form id="update-text-form" autocomplete="off" onsubmit="return false;">
+          <textarea id="update-text-input" class="text-input" placeholder="Select a saved text to edit..." required></textarea>
+          <div class="actions">
+            <button type="button" class="submit-btn" style="background:#28a745;" data-label="Update Text" onclick="updateText(this)">Update Text</button>
+          </div>
+        </form>
+        <div id="analyze-instructions" style="text-align:center;color:#888;margin-bottom:16px;">Select a saved text from the sidebar to view its analysis.</div>
+        <div class="actions" id="analyze-actions">
+          <button type="button" class="submit-btn" data-label="Word Count" onclick="analyzeWordCount(this)">Word Count</button>
+          <button type="button" class="submit-btn" data-label="Character Count" onclick="analyzeCharacterCount(this)">Character Count</button>
+          <button type="button" class="submit-btn" data-label="Sentence Count" onclick="analyzeSentenceCount(this)">Sentence Count</button>
+          <button type="button" class="submit-btn" data-label="Paragraph Count" onclick="analyzeParagraphCount(this)">Paragraph Count</button>
+          <button type="button" class="submit-btn" data-label="Longest Words by Paragraph" onclick="analyzeLongestWordsByParagraph(this)">Longest Words by Paragraph</button>
+        </div>
+        <section class="results" id="results">
+          <h3>Analysis Results</h3>
+          <ul class="result-list">
+            <li class="result-item"><span class="result-label">Word Count:</span> <span id="word-count">-</span></li>
+            <li class="result-item"><span class="result-label">Character Count:</span> <span id="character-count">-</span></li>
+            <li class="result-item"><span class="result-label">Sentence Count:</span> <span id="sentence-count">-</span></li>
+            <li class="result-item"><span class="result-label">Paragraph Count:</span> <span id="paragraph-count">-</span></li>
+            <li class="result-item"><span class="result-label">Longest Words by Paragraph:</span>
+              <div id="paragraph-longest-words">-</div>
+            </li>
+          </ul>
+        </section>
+      </div>
+    </main>
+  </div>
   <script>
+    let currentPage = 1;
+    let pageCount = 1;
+    let selectedTextId = null;
+    let currentTab = 'create';
+
     async function logout() {
       try {
         const res = await fetch('/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
@@ -80,7 +130,112 @@
     function showError(msg) { document.getElementById('error-message').innerText = msg; }
     function clearError() { document.getElementById('error-message').innerText = ''; }
 
-    async function analyzeAll(btn) { await analyzeEndpoint('/api/texts', btn, 'all'); }
+    async function fetchTexts(page = 1) {
+      const res = await fetch(`/api/texts?page=${page}`);
+      if (res.ok) {
+        const data = await res.json();
+        renderTextList(data.texts, data.page, data.pageCount);
+        pageCount = data.pageCount;
+        currentPage = data.page;
+        document.getElementById('page-info').innerText = `Page ${data.page} of ${data.pageCount}`;
+        document.getElementById('prev-page').disabled = data.page <= 1;
+        document.getElementById('next-page').disabled = data.page >= data.pageCount;
+      }
+    }
+
+    function renderTextList(texts, page, pageCount) {
+      const list = document.getElementById('text-list');
+      list.innerHTML = '';
+      if (!texts.length) {
+        list.innerHTML = '<li style="color:#888;">No saved messages.</li>';
+        return;
+      }
+      texts.forEach(text => {
+        const li = document.createElement('li');
+        li.className = 'text-list-item' + (text._id === selectedTextId ? ' selected' : '');
+        li.innerHTML = `
+          <span class="text-snippet" style="cursor:pointer;" onclick="selectText('${text._id}')">${escapeHtml(text.content.slice(0, 40))}${text.content.length > 40 ? '...' : ''}</span>
+          <span class="text-date">${formatDate(text.createdAt)}</span>
+          <button class="delete-btn" style="margin-left:8px;background:#dc3545;color:#fff;border:none;border-radius:3px;padding:2px 8px;cursor:pointer;font-size:13px;" onclick="event.stopPropagation(); deleteTextItem('${text._id}')">Delete</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    }
+    function formatDate(dateStr) {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    function showTab(tab) {
+      currentTab = tab;
+      document.getElementById('tab-create').classList.toggle('active', tab === 'create');
+      document.getElementById('tab-analyze').classList.toggle('active', tab === 'analyze');
+      document.getElementById('tab-create-content').style.display = tab === 'create' ? '' : 'none';
+      document.getElementById('tab-analyze-content').style.display = tab === 'analyze' ? '' : 'none';
+      if (tab === 'analyze') {
+        clearResults();
+        document.getElementById('analyze-instructions').style.display = 'block';
+      }
+    }
+    async function saveText(btn) {
+      clearError();
+      setLoading(true, btn);
+      const content = document.getElementById('text-input').value.trim();
+      if (!content) {
+        showError('Please enter some text to save.');
+        setLoading(false, btn);
+        return;
+      }
+      try {
+        const res = await fetch('/api/texts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+        if (res.ok) {
+          document.getElementById('text-input').value = '';
+          fetchTexts(1);
+          showTab('analyze');
+        } else {
+          const errorData = await res.json();
+          showError(errorData.message || 'Failed to save text.');
+        }
+      } catch (err) {
+        showError('Network error. Please try again.');
+      } finally {
+        setLoading(false, btn);
+      }
+    }
+    async function selectText(id) {
+      selectedTextId = id;
+      // Highlight selected
+      Array.from(document.getElementsByClassName('text-list-item')).forEach(li => {
+        li.classList.remove('selected');
+      });
+      const list = document.getElementById('text-list');
+      const idx = Array.from(list.children).findIndex(li => li.onclick && li.onclick.toString().includes(id));
+      if (idx >= 0) list.children[idx].classList.add('selected');
+      // Fetch and show analysis
+      const res = await fetch(`/api/texts/${id}`);
+      if (res.ok) {
+        const text = await res.json();
+        showTab('analyze');
+        displayResults(text.analysis);
+        document.getElementById('analyze-instructions').style.display = 'none';
+        document.getElementById('update-text-input').value = text.content;
+      }
+    }
+    function changePage(delta) {
+      let next = currentPage + delta;
+      if (next < 1) next = 1;
+      if (next > pageCount) next = pageCount;
+      fetchTexts(next);
+    }
+
+    // Existing analysis functions ...
     async function analyzeWordCount(btn) { await analyzeEndpoint('/api/analyze/word-count', btn, 'wordCount'); }
     async function analyzeCharacterCount(btn) { await analyzeEndpoint('/api/analyze/character-count', btn, 'characterCount'); }
     async function analyzeSentenceCount(btn) { await analyzeEndpoint('/api/analyze/sentence-count', btn, 'sentenceCount'); }
@@ -91,7 +246,12 @@
       clearError();
       clearResults();
       setLoading(true, btn);
-      const content = document.getElementById('text-input').value.trim();
+      let content;
+      if (currentTab === 'analyze') {
+        content = document.getElementById('update-text-input').value.trim();
+      } else {
+        content = document.getElementById('text-input').value.trim();
+      }
       if (!content) {
         showError('Please enter some text to analyze.');
         setLoading(false, btn);
@@ -107,6 +267,8 @@
           const data = await res.json();
           if (type === 'all') displayResults(data.analysis);
           else displaySingleResult(type, data);
+          // Refresh sidebar after saving new text
+          if (endpoint === '/api/texts') fetchTexts(1);
         } else {
           const errorData = await res.json();
           showError(errorData.message || 'Failed to analyze text.');
@@ -150,6 +312,58 @@
         container.innerText = 'No paragraphs found';
       }
     }
+
+    async function updateText(btn) {
+      clearError();
+      setLoading(true, btn);
+      const content = document.getElementById('update-text-input').value.trim();
+      if (!content) {
+        showError('Please enter some text to update.');
+        setLoading(false, btn);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/texts/${selectedTextId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+        if (res.ok) {
+          // Instead of clearing and switching tab, re-select the updated text to refresh analysis and textarea
+          await fetchTexts(1);
+          await selectText(selectedTextId);
+        } else {
+          const errorData = await res.json();
+          showError(errorData.message || 'Failed to update text.');
+        }
+      } catch (err) {
+        showError('Network error. Please try again.');
+      } finally {
+        setLoading(false, btn);
+      }
+    }
+
+    async function deleteTextItem(id) {
+      if (!confirm('Are you sure you want to delete this text?')) return;
+      try {
+        const res = await fetch(`/api/texts/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          if (selectedTextId === id) selectedTextId = null;
+          await fetchTexts(currentPage);
+          // Optionally clear analysis/results if deleted item was selected
+          clearResults();
+          document.getElementById('update-text-input').value = '';
+        } else {
+          const errorData = await res.json();
+          showError(errorData.message || 'Failed to delete text.');
+        }
+      } catch (err) {
+        showError('Network error. Please try again.');
+      }
+    }
+
+    // Initial fetch
+    fetchTexts(1);
   </script>
 </body>
 </html> 
