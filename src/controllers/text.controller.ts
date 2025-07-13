@@ -21,11 +21,6 @@ export const createText = async (req: Request, res: Response, next: NextFunction
       return res.status(400).json({ message: 'Content is required and must be a string' });
     }
     
-    // Check if user is authenticated
-    if (!req.user) {
-      return res.status(401).json({ message: 'Authentication required' });
-    }
-    
     // Analyze the text
     const analysis = analyzeText(content);
     
@@ -64,11 +59,6 @@ export const getWordCountAnalysis = async (req: Request, res: Response, next: Ne
     
     if (!content || typeof content !== 'string') {
       return res.status(400).json({ message: 'Content is required and must be a string' });
-    }
-    
-    // Check if user is authenticated
-    if (!req.user) {
-      return res.status(401).json({ message: 'Authentication required' });
     }
     
     const wordCount = getWordCount(content);
