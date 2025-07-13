@@ -8,157 +8,147 @@
     body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
     .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     h1 { text-align: center; color: #333; }
-    .text-input { width: 100%; min-height: 200px; padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; resize: vertical; }
-    .submit-btn { padding: 12px 24px; background: #007bff; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 12px; }
-    .submit-btn:hover { background: #0056b3; }
+    .text-input { width: 100%; min-height: 160px; padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; resize: vertical; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center; }
+    .submit-btn { padding: 10px 18px; background: #007bff; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; transition: background 0.2s; }
+    .submit-btn:hover:not(:disabled) { background: #0056b3; }
     .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
     .results { margin-top: 24px; padding: 16px; background: #f8f9fa; border-radius: 4px; display: none; }
+    .result-list { list-style: none; padding: 0; margin: 0; }
     .result-item { margin: 8px 0; }
-    .result-label { font-weight: bold; color: #333; }
-    .longest-words { display: flex; flex-wrap: wrap; gap: 8px; }
-    .word-tag { background: #007bff; color: #fff; padding: 4px 8px; border-radius: 12px; font-size: 14px; }
+    .result-label { font-weight: bold; color: #333; display: inline-block; min-width: 140px; }
+    .word-tag { background: #007bff; color: #fff; padding: 4px 8px; border-radius: 12px; font-size: 14px; margin-right: 4px; display: inline-block; }
     .error { color: red; text-align: center; margin-top: 12px; }
     .logout { text-align: right; margin-bottom: 20px; }
-    .logout-btn { 
-      background: #dc3545; 
-      color: white; 
-      border: none; 
-      padding: 8px 16px; 
-      border-radius: 4px; 
-      cursor: pointer; 
-      font-size: 14px;
-      text-decoration: none;
-      display: inline-block;
-    }
-    .logout-btn:hover { 
-      background: #c82333; 
-      text-decoration: none; 
-    }
+    .logout-btn { background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; text-decoration: none; display: inline-block; transition: background 0.2s; }
+    .logout-btn:hover { background: #c82333; text-decoration: none; }
+    .paragraph-block { margin: 8px 0; }
   </style>
 </head>
 <body>
-  <div class="logout">
+  <nav class="logout">
     <button class="logout-btn" onclick="logout();">Logout</button>
-  </div>
-  <div class="container">
+  </nav>
+  <main class="container">
     <h1>Text Analyzer</h1>
-    <form id="text-form">
-      <textarea 
-        id="text-input" 
-        class="text-input" 
-        placeholder="Enter your text here..." 
-        required
-      ></textarea>
-      <button type="submit" class="submit-btn" id="submit-btn">Analyze Text</button>
+    <form id="text-form" autocomplete="off" onsubmit="return false;">
+      <textarea id="text-input" class="text-input" placeholder="Enter your text here..." required></textarea>
+      <div class="actions">
+        <button type="button" class="submit-btn" data-label="Analyze All" onclick="analyzeAll(this)">Analyze All</button>
+        <button type="button" class="submit-btn" data-label="Word Count" onclick="analyzeWordCount(this)">Word Count</button>
+        <button type="button" class="submit-btn" data-label="Character Count" onclick="analyzeCharacterCount(this)">Character Count</button>
+        <button type="button" class="submit-btn" data-label="Sentence Count" onclick="analyzeSentenceCount(this)">Sentence Count</button>
+        <button type="button" class="submit-btn" data-label="Paragraph Count" onclick="analyzeParagraphCount(this)">Paragraph Count</button>
+        <button type="button" class="submit-btn" data-label="Longest Words by Paragraph" onclick="analyzeLongestWordsByParagraph(this)">Longest Words by Paragraph</button>
+      </div>
     </form>
     <div class="error" id="error-message"></div>
-    <div class="results" id="results">
+    <section class="results" id="results">
       <h3>Analysis Results</h3>
-      <div class="result-item">
-        <span class="result-label">Word Count:</span> 
-        <span id="word-count">-</span>
-      </div>
-      <div class="result-item">
-        <span class="result-label">Character Count:</span> 
-        <span id="character-count">-</span>
-      </div>
-      <div class="result-item">
-        <span class="result-label">Sentence Count:</span> 
-        <span id="sentence-count">-</span>
-      </div>
-      <div class="result-item">
-        <span class="result-label">Paragraph Count:</span> 
-        <span id="paragraph-count">-</span>
-      </div>
-      <div class="result-item">
-        <span class="result-label">Longest Words by Paragraph:</span>
-        <div class="paragraph-longest-words" id="paragraph-longest-words">-</div>
-      </div>
-    </div>
-  </div>
+      <ul class="result-list">
+        <li class="result-item"><span class="result-label">Word Count:</span> <span id="word-count">-</span></li>
+        <li class="result-item"><span class="result-label">Character Count:</span> <span id="character-count">-</span></li>
+        <li class="result-item"><span class="result-label">Sentence Count:</span> <span id="sentence-count">-</span></li>
+        <li class="result-item"><span class="result-label">Paragraph Count:</span> <span id="paragraph-count">-</span></li>
+        <li class="result-item"><span class="result-label">Longest Words by Paragraph:</span>
+          <div id="paragraph-longest-words">-</div>
+        </li>
+      </ul>
+    </section>
+  </main>
   <script>
     async function logout() {
       try {
-        const res = await fetch('/logout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        
-        if (res.ok) {
-          window.location.href = '/';
-        } else {
-          console.error('Logout failed');
-        }
-      } catch (err) {
-        console.error('Logout error:', err);
-      }
+        const res = await fetch('/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+        if (res.ok) window.location.href = '/';
+      } catch (err) { /* ignore */ }
     }
-    
-    document.getElementById('text-form').onsubmit = async function(e) {
-      e.preventDefault();
-      
-      const submitBtn = document.getElementById('submit-btn');
-      const errorMessage = document.getElementById('error-message');
-      const results = document.getElementById('results');
-      
-      // Clear previous results and errors
-      errorMessage.innerText = '';
-      results.style.display = 'none';
-      
+
+    function setLoading(isLoading, btn) {
+      if (!btn) return;
+      btn.disabled = isLoading;
+      btn.innerText = isLoading ? 'Analyzing...' : btn.getAttribute('data-label');
+    }
+
+    function clearResults() {
+      document.getElementById('results').style.display = 'none';
+      ['word-count','character-count','sentence-count','paragraph-count'].forEach(id => {
+        document.getElementById(id).innerText = '-';
+      });
+      document.getElementById('paragraph-longest-words').innerText = '-';
+    }
+    function showError(msg) { document.getElementById('error-message').innerText = msg; }
+    function clearError() { document.getElementById('error-message').innerText = ''; }
+
+    async function analyzeAll(btn) { await analyzeEndpoint('/api/texts', btn, 'all'); }
+    async function analyzeWordCount(btn) { await analyzeEndpoint('/api/analyze/word-count', btn, 'wordCount'); }
+    async function analyzeCharacterCount(btn) { await analyzeEndpoint('/api/analyze/character-count', btn, 'characterCount'); }
+    async function analyzeSentenceCount(btn) { await analyzeEndpoint('/api/analyze/sentence-count', btn, 'sentenceCount'); }
+    async function analyzeParagraphCount(btn) { await analyzeEndpoint('/api/analyze/paragraph-count', btn, 'paragraphCount'); }
+    async function analyzeLongestWordsByParagraph(btn) { await analyzeEndpoint('/api/analyze/longest-words-by-paragraph', btn, 'longestWordsByParagraph'); }
+
+    async function analyzeEndpoint(endpoint, btn, type) {
+      clearError();
+      clearResults();
+      setLoading(true, btn);
       const content = document.getElementById('text-input').value.trim();
       if (!content) {
-        errorMessage.innerText = 'Please enter some text to analyze.';
+        showError('Please enter some text to analyze.');
+        setLoading(false, btn);
         return;
       }
-      
-      // Disable submit button
-      submitBtn.disabled = true;
-      submitBtn.innerText = 'Analyzing...';
-      
       try {
-        const res = await fetch('/texts', {
+        const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ content })
         });
-        
         if (res.ok) {
           const data = await res.json();
-          displayResults(data.analysis);
+          if (type === 'all') displayResults(data.analysis);
+          else displaySingleResult(type, data);
         } else {
           const errorData = await res.json();
-          errorMessage.innerText = errorData.message || 'Failed to analyze text.';
+          showError(errorData.message || 'Failed to analyze text.');
         }
       } catch (err) {
-        errorMessage.innerText = 'Network error. Please try again.';
+        showError('Network error. Please try again.');
       } finally {
-        // Re-enable submit button
-        submitBtn.disabled = false;
-        submitBtn.innerText = 'Analyze Text';
+        setLoading(false, btn);
       }
-    };
-    
+    }
+
     function displayResults(analysis) {
       document.getElementById('word-count').innerText = analysis.wordCount;
       document.getElementById('character-count').innerText = analysis.characterCount;
       document.getElementById('sentence-count').innerText = analysis.sentenceCount;
       document.getElementById('paragraph-count').innerText = analysis.paragraphCount;
-      
-      const paragraphLongestWordsContainer = document.getElementById('paragraph-longest-words');
-      if (analysis.longestWordsPerParagraph && analysis.longestWordsPerParagraph.length > 0) {
-        paragraphLongestWordsContainer.innerHTML = analysis.longestWordsPerParagraph
-          .map(paragraph => {
-            const words = paragraph.longestWords.length > 0 
-              ? paragraph.longestWords.map(word => `<span class="word-tag">${word}</span>`).join('')
-              : 'No words found';
-            return `<div style="margin: 8px 0;"><strong>Paragraph ${paragraph.paragraphIndex}:</strong> ${words}</div>`;
-          })
-          .join('');
-      } else {
-        paragraphLongestWordsContainer.innerText = 'No paragraphs found';
-      }
-      
+      renderParagraphLongestWords(analysis.longestWordsPerParagraph);
       document.getElementById('results').style.display = 'block';
+    }
+
+    function displaySingleResult(type, data) {
+      clearResults();
+      document.getElementById('results').style.display = 'block';
+      if (type === 'wordCount') document.getElementById('word-count').innerText = data.wordCount;
+      else if (type === 'characterCount') document.getElementById('character-count').innerText = data.characterCount;
+      else if (type === 'sentenceCount') document.getElementById('sentence-count').innerText = data.sentenceCount;
+      else if (type === 'paragraphCount') document.getElementById('paragraph-count').innerText = data.paragraphCount;
+      else if (type === 'longestWordsByParagraph') renderParagraphLongestWords(data.longestWordsByParagraph);
+    }
+
+    function renderParagraphLongestWords(paragraphs) {
+      const container = document.getElementById('paragraph-longest-words');
+      if (paragraphs && paragraphs.length > 0) {
+        container.innerHTML = paragraphs.map(paragraph => {
+          const words = paragraph.longestWords.length > 0
+            ? paragraph.longestWords.map(word => `<span class="word-tag">${word}</span>`).join('')
+            : 'No words found';
+          return `<div class="paragraph-block"><strong>Paragraph ${paragraph.paragraphIndex}:</strong> ${words}</div>`;
+        }).join('');
+      } else {
+        container.innerText = 'No paragraphs found';
+      }
     }
   </script>
 </body>

@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import session from 'express-session';
 import passport from './services/passport.service';
 import authRoutes from './routes/auth.routes';
+import userRoutes from './routes/user.routes';
 import textRoutes from './routes/text.routes';
 import path from 'path';
 import dotenv from 'dotenv';
@@ -30,15 +31,9 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/dashboard', (req, res) => {
-  if (!req.user) {
-    return res.redirect('/');
-  }
-  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
-});
-
 app.use(authRoutes);
-app.use(textRoutes);
+app.use(userRoutes);
+app.use('/api', textRoutes);
 
 mongoose.connect(process.env.MONGO_URI||'mongodb://localhost:27017/textanalyzer');
 

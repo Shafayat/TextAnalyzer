@@ -31,19 +31,6 @@ router.get(
 );
 
 /**
- * GET /api/me
- * Returns the current authenticated user's username if logged in, or 401 if not authenticated.
- * Used by the frontend to determine login status and display the appropriate UI.
- */
-router.get('/api/me', (req, res) => {
-  if (req.isAuthenticated && req.isAuthenticated() && req.user) {
-    res.json({ username: (req.user as any).username });
-  } else {
-    res.status(401).json({ message: 'Not authenticated' });
-  }
-});
-
-/**
  * POST /logout
  * Logs out the current user by destroying the session and clearing the session cookie.
  * Used by the frontend logout button to end the user's session and return to the login/signup UI.
