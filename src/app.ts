@@ -1,5 +1,4 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import session from 'express-session';
 import passport from './services/passport.service';
 import authRoutes from './routes/auth.routes';
@@ -7,6 +6,7 @@ import userRoutes from './routes/user.routes';
 import textRoutes from './routes/text.routes';
 import path from 'path';
 import dotenv from 'dotenv';
+import { createApiRateLimiter } from './middlewares/rateLimiter';
 dotenv.config();
 
 const app = express();
@@ -33,7 +33,11 @@ app.get('/', (req, res) => {
 
 app.use(authRoutes);
 app.use(userRoutes);
-app.use('/api', textRoutes);
+
+
+const apiLimiter = createApiRateLimiter();
+
+app.use('/api', apiLimiter, textRoutes);
 
 app.use((err: any, req: any, res: any, next: any  ) => {
   console.error('Express error:', err); // Add this line

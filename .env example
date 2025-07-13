@@ -11,3 +11,6 @@ GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
 GOOGLE_AUTH_URL=http://localhost:8080/authorize
 GOOGLE_TOKEN_URL=http://localhost:8080/token
 GOOGLE_USERINFO_URL=http://localhost:8080/userinfo
+
+RATE_LIMIT_TIME=10
+RATE_LIMIT_MAX_REQUEST=100
