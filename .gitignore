@@ -1,0 +1,43 @@
+# Node.js
+node_modules/
+dist/
+.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Logs
+logs/
+*.log
+**/*.log
+combined.log
+error.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+
+# Editor directories and files
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Build output
+build/
+
+# Misc
+coverage/
+public/*.map
+
+# PhpStorm
+# See https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
+.idea/
+*.iml
+out/
+
+# Optional: ignore test output
+/test-output/ 

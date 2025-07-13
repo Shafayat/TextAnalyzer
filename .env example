@@ -1,0 +1,13 @@
+PORT=3000
+MONGODB_URI=mongodb://localhost:27017/textanalyzer
+NODE_ENV=development
+
+SESSION_SECRET=
+
+GOOGLE_CLIENT_ID=mock-client-id
+GOOGLE_CLIENT_SECRET=
+GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
+
+GOOGLE_AUTH_URL=http://localhost:8080/authorize
+GOOGLE_TOKEN_URL=http://localhost:8080/token
+GOOGLE_USERINFO_URL=http://localhost:8080/userinfo
